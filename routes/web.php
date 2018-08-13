@@ -15,11 +15,6 @@ Route::get('/', function () {
     return view('phonebook');
 });
 
-/* Route::get('/phonebook/{name}', function () {
-    return redirect('/');
-})->where('name', '[A-Za-z]+'); */
-
-
 Route::prefix('api')->group(function() {
     Route::resource('phonebook', 'PhonebookController');
 });

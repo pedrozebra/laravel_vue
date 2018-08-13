@@ -8,9 +8,6 @@ Vue.use(VueRouter);
 
 Vue.component('Myheader', require('./components/HeaderComponent.vue'));
 Vue.component('Myfooter', require('./components/FooterComponent.vue'));
-//Vue.component('Add', require('./components/AddComponent.vue'));
-//Vue.component('Home', require('./components/HomeComponent.vue'));
-//Vue.component('About', require('./components/AboutComponent.vue'));
 
 
 let Home = require('./components/HomeComponent.vue');
@@ -23,11 +20,17 @@ const routes = [
 ]
 
 const router = new VueRouter({
-    //mode: 'history',
     routes
   })
 
 const app = new Vue({
     el: '#app',
     router
+});
+
+$(document).ready(function() {
+    $(".navbar-burger").click(function() {
+        $(".navbar-burger").toggleClass("is-active");
+        $(".navbar-menu").toggleClass("is-active");  
+    });
 });

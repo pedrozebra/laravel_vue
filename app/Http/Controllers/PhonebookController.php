@@ -42,6 +42,7 @@ class PhonebookController extends Controller
        $pb->phone = $request->phone;
        $pb->email = $request->email;
        $pb->save();
+       return $pb;
     }
 
     /**
@@ -69,13 +70,17 @@ class PhonebookController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Http\Requests\PhonebookRequest  $request
      * @param  \App\Phonebook  $phonebook
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Phonebook $phonebook)
+    public function update(PhonebookRequest $request)
     {
-        //
+       $pb = Phonebook::find($request->id);
+       $pb->name = $request->name;
+       $pb->phone = $request->phone;
+       $pb->email = $request->email;
+       $pb->save();
     }
 
     /**
@@ -86,7 +91,7 @@ class PhonebookController extends Controller
      */
     public function destroy(Phonebook $phonebook)
     {
-        //
+        Phonebook::where('id', $phonebook->id)->delete();
     }
 
 

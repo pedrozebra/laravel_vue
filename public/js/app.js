@@ -1098,10 +1098,6 @@ __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vue_
 
 __WEBPACK_IMPORTED_MODULE_0_vue___default.a.component('Myheader', __webpack_require__(40));
 __WEBPACK_IMPORTED_MODULE_0_vue___default.a.component('Myfooter', __webpack_require__(42));
-//Vue.component('Add', require('./components/AddComponent.vue'));
-//Vue.component('Home', require('./components/HomeComponent.vue'));
-//Vue.component('About', require('./components/AboutComponent.vue'));
-
 
 var Home = __webpack_require__(44);
 var About = __webpack_require__(53);
@@ -1109,13 +1105,19 @@ var About = __webpack_require__(53);
 var routes = [{ path: '/', component: Home }, { path: '/about', component: About }];
 
 var router = new __WEBPACK_IMPORTED_MODULE_1_vue_router__["a" /* default */]({
-    //mode: 'history',
     routes: routes
 });
 
 var app = new __WEBPACK_IMPORTED_MODULE_0_vue___default.a({
     el: '#app',
     router: router
+});
+
+$(document).ready(function () {
+    $(".navbar-burger").click(function () {
+        $(".navbar-burger").toggleClass("is-active");
+        $(".navbar-menu").toggleClass("is-active");
+    });
 });
 
 /***/ }),
@@ -1159,23 +1161,6 @@ if (token) {
 } else {
   console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
 }
-
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
- */
-
-// import Echo from 'laravel-echo'
-
-// window.Pusher = require('pusher-js');
-
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: process.env.MIX_PUSHER_APP_KEY,
-//     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-//     encrypted: true
-// });
 
 /***/ }),
 /* 13 */
@@ -46043,7 +46028,7 @@ var render = function() {
       _vm._v(" "),
       _c(
         "div",
-        { staticClass: "navbar-menu is-active" },
+        { staticClass: "navbar-menu" },
         [
           _c(
             "router-link",
@@ -46074,8 +46059,9 @@ var staticRenderFns = [
         [
           _c("img", {
             attrs: {
-              src: "https://bulma.io/images/bulma-logo.png",
-              alt: "Bulma: a modern CSS framework based on Flexbox",
+              src: "/images/logo_phonebook.png",
+              alt: "Phonebook based on Bulma/Vue/Laravel",
+              title: "Phonebook based on Bulma/Vue/Laravel",
               width: "112",
               height: "28"
             }
@@ -46178,30 +46164,9 @@ var staticRenderFns = [
     return _c("footer", { staticClass: "footer" }, [
       _c("div", { staticClass: "content has-text-centered" }, [
         _c("p", [
-          _c("strong", [_vm._v("Bulma")]),
-          _vm._v(" by "),
-          _c("a", { attrs: { href: "https://jgthms.com" } }, [
-            _vm._v("Jeremy Thomas")
-          ]),
-          _vm._v(". The source code is licensed\n      "),
-          _c(
-            "a",
-            {
-              attrs: { href: "http://opensource.org/licenses/mit-license.php" }
-            },
-            [_vm._v("MIT")]
-          ),
-          _vm._v(". The website content\n      is licensed "),
-          _c(
-            "a",
-            {
-              attrs: {
-                href: "http://creativecommons.org/licenses/by-nc-sa/4.0/"
-              }
-            },
-            [_vm._v("CC BY NC SA 4.0")]
-          ),
-          _vm._v(".\n    ")
+          _vm._v("\n      simple "),
+          _c("strong", [_vm._v("Phonebook")]),
+          _vm._v("  based on Bulma/Vue/Laravel\n    ")
         ])
       ])
     ])
@@ -46311,29 +46276,50 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
 
 var Add = __webpack_require__(46);
 var Show = __webpack_require__(49);
+var Update = __webpack_require__(66);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  components: { Add: Add, Show: Show },
-
+  components: { Add: Add, Show: Show, Update: Update },
   data: function data() {
     return {
       addActive: '',
       showActive: '',
+      updateActive: '',
       lists: {},
-      errors: {}
+      errors: {},
+      loading: false,
+      searchQuery: '',
+      temp: ''
     };
   },
+
+  watch: {
+    searchQuery: function searchQuery() {
+      var _this = this;
+
+      if (this.searchQuery.length > 0) {
+        this.temp = this.lists.filter(function (item) {
+
+          return Object.keys(item).some(function (key) {
+            var string = String(item[key]);
+            return string.toLowerCase().indexOf(_this.searchQuery.toLowerCase()) > -1;
+          });
+        });
+      } else {
+        this.temp = this.lists;
+      }
+    }
+  },
   mounted: function mounted() {
-    var _this = this;
+    var _this2 = this;
 
     axios.get('/getData').then(function (response) {
-      return _this.lists = response.data;
+      return _this2.lists = _this2.temp = response.data;
     }).catch(function (error) {
-      return _this.errors = error.response.data.errors;
+      return _this2.errors = error.response.data.errors;
     });
   },
 
@@ -46343,11 +46329,27 @@ var Show = __webpack_require__(49);
       this.addActive = 'is-active';
     },
     openShowModal: function openShowModal(key) {
-      this.$children[1].list = this.lists[key];
+      this.$children[1].list = this.temp[key];
       this.showActive = 'is-active';
     },
+    openUpdateModal: function openUpdateModal(key) {
+      this.$children[2].list = this.temp[key];
+      this.updateActive = 'is-active';
+    },
     close: function close() {
-      this.addActive = this.showActive = '';
+      this.addActive = this.showActive = this.updateActive = '';
+    },
+    del: function del(key, id) {
+      var _this3 = this;
+
+      if (confirm("Are you sure to remove contact?")) {
+        this.loading = !this.loading;
+        axios.delete('/api/phonebook/' + id).then(function (response) {
+          _this3.lists.splice(key, 1);_this3.loading = !_this3.loading;
+        }).catch(function (error) {
+          return _this3.errors = error.response.data.errors;
+        });
+      }
     }
   }
 });
@@ -46472,8 +46474,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     save: function save() {
       var _this = this;
 
-      axios.post('/phonebook', this.$data.list).then(function (response) {
-        return _this.close();
+      axios.post('/api/phonebook', this.$data.list).then(function (response) {
+        _this.close();
+        _this.$parent.lists.push(response.data);
+        _this.$parent.lists.sort(function (a, b) {
+          if (a.name > b.name) {
+            return 1;
+          } else if (a.name < b.name) {
+            return -1;
+          }
+        });
+
+        _this.list = "";
+        _this.errors = "";
       }).catch(function (error) {
         return _this.errors = error.response.data.errors;
       });
@@ -46710,13 +46723,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     props: ['openmodal'],
@@ -46725,7 +46731,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             list: ''
         };
     },
-
 
     methods: {
         close: function close() {
@@ -46748,7 +46753,7 @@ var render = function() {
     _c("div", { staticClass: "modal-card" }, [
       _c("header", { staticClass: "modal-card-head" }, [
         _c("p", { staticClass: "modal-card-title" }, [
-          _vm._v("Dettagli Contatto")
+          _vm._v("Contact Detail")
         ]),
         _vm._v(" "),
         _c("button", {
@@ -46761,23 +46766,23 @@ var render = function() {
       _c("section", { staticClass: "modal-card-body" }, [
         _c("li", { staticClass: "panel-block" }, [
           _vm._m(0),
-          _vm._v(_vm._s(_vm.list.name) + "\n        ")
+          _vm._v(_vm._s(_vm.list.name) + "\n            ")
         ]),
         _vm._v(" "),
         _c("li", { staticClass: "panel-block" }, [
           _vm._m(1),
-          _vm._v(_vm._s(_vm.list.phone) + "\n        ")
+          _vm._v(_vm._s(_vm.list.phone) + "\n            ")
         ]),
         _vm._v(" "),
         _c("li", { staticClass: "panel-block" }, [
           _vm._m(2),
-          _vm._v(_vm._s(_vm.list.name) + "\n        ")
+          _vm._v(_vm._s(_vm.list.email) + "\n            ")
         ])
       ]),
       _vm._v(" "),
       _c("footer", { staticClass: "modal-card-foot" }, [
         _c("button", { staticClass: "button", on: { click: _vm.close } }, [
-          _vm._v("Chiudi")
+          _vm._v("Cancel")
         ])
       ])
     ])
@@ -46834,24 +46839,55 @@ var render = function() {
         { staticClass: "panel column is-offset-2 is-8" },
         [
           _c("p", { staticClass: "panel-heading" }, [
-            _vm._v("\r\n      Phonebook\r\n    ")
+            _vm._v("\n      Phonebook\n     "),
+            _c(
+              "button",
+              {
+                staticClass: "button is-primary is-outlined",
+                on: { click: _vm.openAddModal }
+              },
+              [_vm._v("\n        Add new\n    ")]
+            ),
+            _vm._v(" "),
+            _vm.loading
+              ? _c("span", { staticClass: "is-pulled-right" }, [
+                  _c("i", { staticClass: "fa fa-spinner fa-spin fa-1x fa-fw" })
+                ])
+              : _vm._e()
           ]),
           _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass: "button is-primary is-outlined",
-              on: { click: _vm.openAddModal }
-            },
-            [_vm._v("\r\n        Aggiungi\r\n      ")]
-          ),
+          _c("div", { staticClass: "panel-block" }, [
+            _c("p", { staticClass: "control has-icons-left" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.searchQuery,
+                    expression: "searchQuery"
+                  }
+                ],
+                staticClass: "input is-small",
+                attrs: { type: "text", placeholder: "search" },
+                domProps: { value: _vm.searchQuery },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.searchQuery = $event.target.value
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _vm._m(0)
+            ])
+          ]),
           _vm._v(" "),
-          _vm._m(0),
-          _vm._v(" "),
-          _vm._l(_vm.lists, function(item, key) {
+          _vm._l(_vm.temp, function(item, key) {
             return _c("a", { staticClass: "panel-block" }, [
               _c("span", { staticClass: "column is-9" }, [
-                _vm._v("\r\n      " + _vm._s(item.name) + " \r\n    ")
+                _vm._v("\n        " + _vm._s(item.name) + " \n      ")
               ]),
               _vm._v(" "),
               _c("span", { staticClass: "panel-icon column is-1" }, [
@@ -46866,9 +46902,29 @@ var render = function() {
                 })
               ]),
               _vm._v(" "),
-              _vm._m(1, true),
+              _c("span", { staticClass: "panel-icon column is-1" }, [
+                _c("i", {
+                  staticClass: "has-text-info fa fa-edit",
+                  attrs: { "aria-hidden": "true" },
+                  on: {
+                    click: function($event) {
+                      _vm.openUpdateModal(key)
+                    }
+                  }
+                })
+              ]),
               _vm._v(" "),
-              _vm._m(2, true)
+              _c("span", { staticClass: "panel-icon column is-1" }, [
+                _c("i", {
+                  staticClass: "has-text-danger fa fa-trash",
+                  attrs: { "aria-hidden": "true" },
+                  on: {
+                    click: function($event) {
+                      _vm.del(key, item.id)
+                    }
+                  }
+                })
+              ])
             ])
           })
         ],
@@ -46883,6 +46939,11 @@ var render = function() {
       _c("Show", {
         attrs: { openmodal: _vm.showActive },
         on: { closeRequest: _vm.close }
+      }),
+      _vm._v(" "),
+      _c("Update", {
+        attrs: { openmodal: _vm.updateActive },
+        on: { closeRequest: _vm.close }
       })
     ],
     1
@@ -46893,42 +46954,8 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "panel-block" }, [
-      _c("p", { staticClass: "control has-icons-left" }, [
-        _c("input", {
-          staticClass: "input is-small",
-          attrs: { type: "text", placeholder: "cerca" }
-        }),
-        _vm._v(" "),
-        _c("span", { staticClass: "icon is-small is-left" }, [
-          _c("i", {
-            staticClass: "fa fa-search",
-            attrs: { "aria-hidden": "true" }
-          })
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("span", { staticClass: "panel-icon column is-1" }, [
-      _c("i", {
-        staticClass: "has-text-info fa fa-edit",
-        attrs: { "aria-hidden": "true" }
-      })
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("span", { staticClass: "panel-icon column is-1" }, [
-      _c("i", {
-        staticClass: "has-text-danger fa fa-trash",
-        attrs: { "aria-hidden": "true" }
-      })
+    return _c("span", { staticClass: "icon is-small is-left" }, [
+      _c("i", { staticClass: "fa fa-search", attrs: { "aria-hidden": "true" } })
     ])
   }
 ]
@@ -47005,12 +47032,23 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("section", { staticClass: "section" }, [
       _c("div", { staticClass: "container" }, [
-        _c("h1", { staticClass: "title" }, [_vm._v("Section")]),
+        _c("h1", { staticClass: "title" }, [_vm._v("Phonebook")]),
         _vm._v(" "),
         _c("h2", { staticClass: "subtitle" }, [
-          _vm._v("\n      A simple container to divide your page into "),
-          _c("strong", [_vm._v("sections")]),
-          _vm._v(", like the one you're currently reading\n    ")
+          _vm._v(
+            "\n      A simple telephone and mail manager for your contacts.        \n    "
+          )
+        ]),
+        _vm._v(" "),
+        _c("h3", { staticClass: "subtitle" }, [
+          _vm._v("\n      dev by "),
+          _c(
+            "a",
+            {
+              attrs: { href: "https://github.com/pedrozebra", target: "_blank" }
+            },
+            [_vm._v("pedrozebra")]
+          )
         ])
       ])
     ])
@@ -47030,6 +47068,288 @@ if (false) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 56 */,
+/* 57 */,
+/* 58 */,
+/* 59 */,
+/* 60 */,
+/* 61 */,
+/* 62 */,
+/* 63 */,
+/* 64 */,
+/* 65 */,
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(67)
+/* template */
+var __vue_template__ = __webpack_require__(68)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources\\assets\\js\\components\\UpdateComponent.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-0010dbe6", Component.options)
+  } else {
+    hotAPI.reload("data-v-0010dbe6", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 67 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['openmodal'],
+    data: function data() {
+        return {
+            list: {},
+            errors: {}
+        };
+    },
+
+    methods: {
+        close: function close() {
+            this.$emit('closeRequest');
+        },
+        update: function update() {
+            var _this = this;
+
+            axios.patch('/api/phonebook/' + this.list.id, this.$data.list).then(function (response) {
+                _this.close();
+                _this.$parent.lists.sort(function (a, b) {
+                    if (a.name > b.name) {
+                        return 1;
+                    } else if (a.name < b.name) {
+                        return -1;
+                    }
+                });
+            }).catch(function (error) {
+                return _this.errors = error.response.data.errors;
+            });
+        }
+    }
+});
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "modal", class: _vm.openmodal }, [
+    _c("div", { staticClass: "modal-background" }),
+    _vm._v(" "),
+    _c("div", { staticClass: "modal-card" }, [
+      _c("header", { staticClass: "modal-card-head" }, [
+        _c("p", { staticClass: "modal-card-title" }, [
+          _vm._v("Update Contact")
+        ]),
+        _vm._v(" "),
+        _c("button", {
+          staticClass: "delete",
+          attrs: { "aria-label": "close" },
+          on: { click: _vm.close }
+        })
+      ]),
+      _vm._v(" "),
+      _c("section", { staticClass: "modal-card-body" }, [
+        _c("div", { staticClass: "field" }, [
+          _c("div", { staticClass: "control" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.list.name,
+                  expression: "list.name"
+                }
+              ],
+              staticClass: "input is-primary",
+              class: { "is-danger": _vm.errors.name },
+              attrs: { type: "text", placeholder: "Nome" },
+              domProps: { value: _vm.list.name },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.list, "name", $event.target.value)
+                }
+              }
+            })
+          ]),
+          _vm._v(" "),
+          _vm.errors.name
+            ? _c("small", { staticClass: "has-text-danger" }, [
+                _vm._v(_vm._s(_vm.errors.name[0]))
+              ])
+            : _vm._e()
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "field" }, [
+          _c("div", { staticClass: "control" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.list.phone,
+                  expression: "list.phone"
+                }
+              ],
+              staticClass: "input is-primary",
+              class: { "is-danger": _vm.errors.phone },
+              attrs: { type: "text", placeholder: "Telefono" },
+              domProps: { value: _vm.list.phone },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.list, "phone", $event.target.value)
+                }
+              }
+            })
+          ]),
+          _vm._v(" "),
+          _vm.errors.phone
+            ? _c("small", { staticClass: "has-text-danger" }, [
+                _vm._v(_vm._s(_vm.errors.phone[0]))
+              ])
+            : _vm._e()
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "field" }, [
+          _c("div", { staticClass: "control" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.list.email,
+                  expression: "list.email"
+                }
+              ],
+              staticClass: "input is-primary",
+              class: { "is-danger": _vm.errors.email },
+              attrs: { type: "email", placeholder: "Email" },
+              domProps: { value: _vm.list.email },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.$set(_vm.list, "email", $event.target.value)
+                }
+              }
+            })
+          ]),
+          _vm._v(" "),
+          _vm.errors.email
+            ? _c("small", { staticClass: "has-text-danger" }, [
+                _vm._v(_vm._s(_vm.errors.email[0]))
+              ])
+            : _vm._e()
+        ])
+      ]),
+      _vm._v(" "),
+      _c("footer", { staticClass: "modal-card-foot" }, [
+        _c(
+          "button",
+          { staticClass: "button is-success", on: { click: _vm.update } },
+          [_vm._v("Update")]
+        ),
+        _vm._v(" "),
+        _c("button", { staticClass: "button", on: { click: _vm.close } }, [
+          _vm._v("Cancel")
+        ])
+      ])
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-0010dbe6", module.exports)
+  }
+}
 
 /***/ })
 /******/ ]);
