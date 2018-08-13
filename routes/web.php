@@ -15,9 +15,13 @@ Route::get('/', function () {
     return view('phonebook');
 });
 
-Route::get('/phonebook/{name}', function () {
+/* Route::get('/phonebook/{name}', function () {
     return redirect('/');
-})->where('name', '[A-Za-z]+');
+})->where('name', '[A-Za-z]+'); */
 
 
-Route::resource('phonebook', 'PhonebookController');
+Route::prefix('api')->group(function() {
+    Route::resource('phonebook', 'PhonebookController');
+});
+
+Route::get('getData','PhonebookController@getData');

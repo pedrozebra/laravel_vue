@@ -1,8 +1,5 @@
 require('./bootstrap');
 
-window.Vue = require('vue');
-
-
 import Vue from 'vue';
 
 import VueRouter from 'vue-router';
@@ -21,7 +18,7 @@ let About = require('./components/AboutComponent.vue');
 
 
 const routes = [
-    { path: '/home', component: Home },
+    { path: '/', component: Home },
     { path: '/about', component: About },
 ]
 
