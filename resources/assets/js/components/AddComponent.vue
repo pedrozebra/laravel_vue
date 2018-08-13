@@ -4,7 +4,7 @@
   <div class="modal-background"></div>
   <div class="modal-card">
     <header class="modal-card-head">
-      <p class="modal-card-title">Aggiungi Contatto</p>
+      <p class="modal-card-title">Add Contact</p>
       <button class="delete" aria-label="close" @click="close"></button>
     </header>
     <section class="modal-card-body">
@@ -36,8 +36,8 @@
 
     </section>
     <footer class="modal-card-foot">
-      <button class="button is-success" @click='save'>Salva</button>
-      <button class="button" @click="close">Annulla</button>
+      <button class="button is-success" @click='save'>Save</button>
+      <button class="button" @click="close">Cancel</button>
     </footer>
   </div>
 </div>
@@ -54,17 +54,13 @@
               phone: '',
               email: ''
             },
-            errors:{
-
-            }
+            errors:{}
           }
         },
         methods:{
-
             close(){
                 this.$emit('closeRequest')
             },
-
             save(){
               axios.post('/api/phonebook', this.$data.list).then((response)=> {
                 this.close()
